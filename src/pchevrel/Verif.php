@@ -1,5 +1,5 @@
 <?php
-namespace Verif;
+namespace pchevrel;
 
 class Verif
 {
@@ -20,7 +20,7 @@ class Verif
     /**
      * Set the domain we will query
      *
-     * @param string $host Domain name, /ex: www.foo.bar
+     * @param  string $host Domain name, /ex: www.foo.bar
      * @return $this
      */
     public function setHost($host)
@@ -34,7 +34,7 @@ class Verif
     /**
      * Set the protocol (http, https...) we will use
      *
-     * @param string $protocol Protocol used
+     * @param  string $protocol Protocol used
      * @return $this
      */
     public function setProtocol($protocol)
@@ -48,7 +48,7 @@ class Verif
     /**
      * Set the path that prefix that will be prepended to the path
      *
-     * @param string $prefix Prefix for the path
+     * @param  string $prefix Prefix for the path
      * @return $this
      */
     public function setPathPrefix($prefix)
@@ -62,7 +62,7 @@ class Verif
     /**
      * Set the path that will be appended to the domain name
      *
-     * @param string $path Path of the query, will be appended to the Host
+     * @param  string $path Path of the query, will be appended to the Host
      * @return $this
      */
     public function setPath($path)
@@ -92,7 +92,7 @@ class Verif
     }
 
     /**
-     * Fetch the content at the specified URI  and stores that in $content
+     * Fetch the content at the specified URI and stores that in $content
      *
      * @return $this
      */
@@ -100,7 +100,7 @@ class Verif
     {
         // Set stream options
         $opts = [
-          'http' => ['ignore_errors' => true]
+          'http' => ['ignore_errors' => true],
         ];
 
         // Create the stream context
@@ -121,6 +121,7 @@ class Verif
     {
         return $this->content;
     }
+
     /**
      * Get the HTTP response code with a GET call
      *
@@ -147,7 +148,6 @@ class Verif
      * Check if the resource is Json data
      * If False, an error will be added to the error stack
      *
-     * @return boolean True if Json, False otherwise
      */
     public function isJSON()
     {
@@ -164,23 +164,53 @@ class Verif
             $this->errors[] =  $this->uri . ' is not valid Json';
         }
 
-        return $status;
+        return $this;
     }
 
     /**
      * Check that the HTTP response code is the one expected
-     * @param  int      $code HTTP code such as 200, 301, 404…
-     * @return boolean        True if matches, False is not
+     * @param  int   $code HTTP code such as 200, 301, 404…
+     * @return $this
      */
     public function hasResponseCode($code)
     {
-        if ($code == $this->getHTTPResponseCode()) {
-            return true;
+        if ($code != $this->getHTTPResponseCode()) {
+            $this->errors[] =
+                'URL: ' . $this->uri
+                . "\nHTTP return code error:\n"
+                . " * Expected: $code\n"
+                . ' * Received: ' . $this->getHTTPResponseCode() . "\n";
         }
 
-        $this->errors[] = $this->uri . ' HTTP expected: ' . $code . ' HTTP: received: ' . $this->getHTTPResponseCode();
+        return $this;
+    }
 
-        return false;
+    /**
+     * Check if the remote content fetched is equal to what we expect
+     * @param  string $string The content we expect
+     * @return $this
+     */
+    public function isEqualTo($string)
+    {
+        if ($string != $this->content) {
+            $this->errors[] =
+                "URL:\n" . $this->uri
+                . "\nContent expected:\n" . $string
+                . "\nContent received:\n" . $this->content . "\n";
+        }
+
+        return $this;
+    }
+
+    /**
+     * Return completion status
+     * Useful for bash scripting and Travis CI integration
+     *
+     * @return int Failure is 1, Success is 0
+     */
+    public function returnStatus()
+    {
+        return empty($this->errors) ? 0 : 1;
     }
 
     /**
@@ -190,14 +220,13 @@ class Verif
      */
     public function report()
     {
-        $title = 'Report for ' . $this->report_title . "\n";
+        $title = 'Report for: ' . $this->report_title . "\n";
         $delimiter = str_repeat("-", strlen($title)) . "\n";
-        print $delimiter;
-        print $title;
-        print $delimiter;
+        print $delimiter . $title . $delimiter;
 
         if (empty($this->errors)) {
             print "All tests processed without errors\n\n";
+
             return 0;
         }
 

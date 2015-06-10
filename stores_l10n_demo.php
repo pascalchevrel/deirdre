@@ -1,10 +1,10 @@
 <?php
-namespace Verif;
+use \pchevrel\Verif;
 
-include 'src/Verif/Verif.php';
+include 'src/pchevrel/Verif.php';
 
 $paths_before = [
-    ['?firefox_locales&channel=org.mozilla.fennec_aurora', 202],
+    ['?firefox_locales&channel=org.mozilla.fennec_aurora', 200],
     ['?firefox_locales&channel=org.mozilla.firefox_beta', 200],
     ['?firefox_locales&channel=org.mozilla.firefox', 200],
     ['?play_locales', 200],
@@ -36,15 +36,14 @@ $obj2
     ->setHost('l10n.mozilla-community.org')
     ->setPathPrefix('~pascalc/stores_l10n/api/');
 
-$check = function($object, $paths) {
+$check = function ($object, $paths) {
     foreach ($paths as $values) {
         list($path, $code) = $values;
         $object
             ->setPath($path)
             ->fetchContent()
-            ->hasResponseCode($code);
-
-        $object->isJson();
+            ->hasResponseCode($code)
+            ->isJson();
     }
 };
 
@@ -52,11 +51,11 @@ $check($obj1, $paths_before);
 $check($obj2, $paths_after);
 
 $equiv = [
-    '?firefox_locales&channel=org.mozilla.firefox'  => 'google/firefoxlocales/releasea/',
+    '?firefox_locales&channel=org.mozilla.firefox'  => 'google/firefoxlocales/release/',
     '?play_locales'                                 => 'google/storelocales/',
     '?locale_mapping'                               => 'google/localesmapping/',
     '?locale_mapping&reverse'                       => 'google/localesmapping/?reverse',
-    '?done'                                         => 'google/done/releasea/',
+    '?done'                                         => 'google/done/release/',
     '?locale=fr'                                    => 'google/translation/release/fr/',
 ];
 
