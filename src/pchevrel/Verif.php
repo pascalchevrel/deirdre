@@ -186,6 +186,37 @@ class Verif
     }
 
     /**
+     * Check if an array has the key provided
+     * @param  string  $key The key we want to checl
+     * @return $this
+     */
+    public function hasKey($key)
+    {
+        $content = json_decode($this->content, true);
+        if (! array_key_exists($key, $content)) {
+            $this->errors[] =
+                "URL:\n" . $this->uri
+                . "\nThe key {$key} is missing in the array\n";
+        }
+
+        return $this;
+    }
+
+    /**
+     * Check if an array has the keys provided
+     * @param  string  $key The key we want to checl
+     * @return $this
+     */
+    public function hasKeys(array $keys)
+    {
+        foreach ($keys as $key) {
+            $this->hasKey($key);
+        }
+
+        return $this;
+    }
+
+    /**
      * Check if the remote content fetched is equal to what we expect
      * @param  string $string The content we expect
      * @return $this
