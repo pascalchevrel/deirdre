@@ -168,6 +168,20 @@ class Verif
     }
 
     /**
+     * Check if the content is a numeric value.
+     * If False, an error will be added to the error stack.
+     * @return $this
+     */
+    public function isNumeric()
+    {
+        if (! is_numeric($this->content)) {
+            $this->errors[] = $this->content . ' is not numeric';
+        }
+
+        return $this;
+    }
+
+    /**
      * Check that the HTTP response code is the one expected
      * @param  int   $code HTTP code such as 200, 301, 404…
      * @return $this
@@ -187,7 +201,7 @@ class Verif
 
     /**
      * Check if an array has the key provided
-     * @param  string  $key The key we want to checl
+     * @param  string $key The key we want to check
      * @return $this
      */
     public function hasKey($key)
@@ -204,7 +218,7 @@ class Verif
 
     /**
      * Check if an array has the keys provided
-     * @param  string  $key The key we want to checl
+     * @param  string $key The key we want to check
      * @return $this
      */
     public function hasKeys(array $keys)
