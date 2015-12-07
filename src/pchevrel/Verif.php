@@ -11,6 +11,7 @@ class Verif
     public $errors = [];
     public $uri;
     public $report_title;
+    public $test_count = 0;
 
     public function __construct($title)
     {
@@ -161,8 +162,12 @@ class Verif
             && json_last_error() == JSON_ERROR_NONE;
 
         if (! $status) {
-            $this->errors[] =  $this->uri . ' is not valid Json';
+            $this->errors[] =
+                $this->colorizeOutput($this->uri . ' is not valid Json', 'red')
+                . "\n";
         }
+
+        $this->test_count++;
 
         return $this;
     }
@@ -175,8 +180,12 @@ class Verif
     public function isNumeric()
     {
         if (! is_numeric($this->content)) {
-            $this->errors[] = $this->content . ' is not numeric';
+            $this->errors[] =
+                $this->colorizeOutput($this->content . ' is not numeric', 'red')
+                . "\n";
         }
+
+        $this->test_count++;
 
         return $this;
     }
@@ -190,11 +199,16 @@ class Verif
     {
         if ($code != $this->getHTTPResponseCode()) {
             $this->errors[] =
-                'URL: ' . $this->uri
-                . "\nHTTP return code error:\n"
-                . " * Expected: $code\n"
-                . ' * Received: ' . $this->getHTTPResponseCode() . "\n";
+                $this->colorizeOutput('HTTP return code error: ', 'yellow')
+                . $this->colorizeOutput($this->uri, 'blue')
+                . "\n"
+                . $this->colorizeOutput('* Expected: ', 'green') . $code
+                . "\n"
+                . $this->colorizeOutput('* Received: ', 'red') . $this->getHTTPResponseCode()
+                . "\n";
         }
+
+        $this->test_count++;
 
         return $this;
     }
@@ -209,9 +223,14 @@ class Verif
         $content = json_decode($this->content, true);
         if (! array_key_exists($key, $content)) {
             $this->errors[] =
-                "URL:\n" . $this->uri
-                . "\nThe key {$key} is missing in the array\n";
+                $this->colorizeOutput('Unexpected content from: ', 'yellow')
+                . $this->colorizeOutput($this->uri, 'blue')
+                . "\n"
+                . $this->colorizeOutput("The key {$key} is missing in the array", 'red')
+                . "\n";
         }
+
+        $this->test_count++;
 
         return $this;
     }
@@ -227,6 +246,8 @@ class Verif
             $this->hasKey($key);
         }
 
+        $this->test_count++;
+
         return $this;
     }
 
@@ -239,10 +260,16 @@ class Verif
     {
         if ($string != $this->content) {
             $this->errors[] =
-                "URL:\n" . $this->uri
-                . "\nContent expected:\n" . $string
-                . "\nContent received:\n" . $this->content . "\n";
+                $this->colorizeOutput('Unexpected content: ', 'yellow')
+                . $this->colorizeOutput($this->uri, 'blue')
+                . "\n"
+                . $this->colorizeOutput('* Expected: ', 'green') . $string
+                . "\n"
+                . $this->colorizeOutput('* Received: ', 'red') . $this->content
+                . "\n";
         }
+
+        $this->test_count++;
 
         return $this;
     }
@@ -270,17 +297,61 @@ class Verif
         print $delimiter . $title . $delimiter;
 
         if (empty($this->errors)) {
-            print "All tests processed without errors\n\n";
+            print $this->colorizeOutput($this->test_count . ' tests processed. All tests processed without errors', 'green');
 
             return 0;
         }
 
-        print "Error:\n";
         foreach ($this->errors as $error) {
             print $error . "\n";
         }
-        print "\n";
+
+        $error_count = count($this->errors) > 1
+            ? 'There are ' . count($this->errors) . " errors"
+            : 'There is one error';
+
+        print $this->colorizeOutput($this->test_count . ' tests processed. ' . $error_count, 'red', true) . "\n";
 
         return 1;
+    }
+
+    /**
+     * Return text to display in console with background color
+     * (useful for tests)
+     *
+     * @param string  $text       Message to display
+     * @param string  $color      color of the message
+     * @param boolean $background White on $color background if true, default to false
+     *
+     * @return string String with ASCII codes to display colored background.
+     */
+    public static function colorizeOutput($text, $color, $background = false)
+    {
+        /*  Color guide:
+            https://gist.github.com/BenTheElder/4b959e708c3e0f00f51c
+        */
+        switch ($color) {
+            case 'green':
+                $color = $background ? "\033[1;37m\033[42m" : "\033[32m";
+                break;
+
+            case 'yellow':
+                $color = $background ? "\033[1;37m\033[43m" : "\033[33m";
+                break;
+
+            case 'red':
+                $color = $background ? "\033[1;37m\033[41m" : "\033[31m";
+                break;
+
+            case 'blue':
+                $color = $background ? "\033[1;37m\033[44m" : "\033[1;34m";
+                break;
+
+            default:
+                $color = '';
+                break;
+        }
+
+        return $color . $text . "\033[0m";
     }
 }
