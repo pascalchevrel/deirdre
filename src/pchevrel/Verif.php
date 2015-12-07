@@ -297,7 +297,10 @@ class Verif
         print $delimiter . $title . $delimiter;
 
         if (empty($this->errors)) {
-            print $this->colorizeOutput($this->test_count . ' tests processed. All tests processed without errors', 'green');
+            print $this->colorizeOutput(
+                $this->test_count . ' tests processed. All tests processed without errors',
+                'green'
+                ) . "\n";
 
             return 0;
         }
