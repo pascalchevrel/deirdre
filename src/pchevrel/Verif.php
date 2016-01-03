@@ -275,6 +275,23 @@ class Verif
     }
 
     /**
+     * Check if the remote content fetched contains a string
+     *
+     * @param  string $string The string we expect
+     * @return $this
+     */
+    public function contains($string)
+    {
+        if (strpos($this->content, $string) === false) {
+            $this->errors[] = $this->colorizeOutput('Missing content: ', 'red') . $string;
+        }
+
+        $this->test_count++;
+
+        return $this;
+    }
+
+    /**
      * Return completion status
      * Useful for bash scripting and Travis CI integration
      *
