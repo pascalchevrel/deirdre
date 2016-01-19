@@ -11,6 +11,7 @@ class Verif
     public $errors = [];
     public $uri;
     public $report_title;
+    public $report_output;
     public $test_count = 0;
 
     public function __construct($title)
@@ -163,7 +164,7 @@ class Verif
 
         if (! $status) {
             $this->errors[] =
-                $this->colorizeOutput($this->uri . ' is not valid Json', 'red')
+                $this->colorizeOutput($this->uri . ' is not valid JSON', 'red')
                 . "\n";
         }
 
@@ -311,26 +312,30 @@ class Verif
     {
         $title = 'Report for: ' . $this->report_title . "\n";
         $delimiter = str_repeat("-", strlen($title)) . "\n";
-        print $delimiter . $title . $delimiter;
+        $this->report_output = $delimiter . $title . $delimiter;
 
         if (empty($this->errors)) {
-            print $this->colorizeOutput(
+            $this->report_output .= $this->colorizeOutput(
                 $this->test_count . ' tests processed. All tests processed without errors',
                 'green'
                 ) . "\n";
+
+            print $this->report_output;
 
             return 0;
         }
 
         foreach ($this->errors as $error) {
-            print $error . "\n";
+            $this->report_output .= $error . "\n";
         }
 
         $error_count = count($this->errors) > 1
             ? 'There are ' . count($this->errors) . " errors"
             : 'There is one error';
 
-        print $this->colorizeOutput($this->test_count . ' tests processed. ' . $error_count, 'red', true) . "\n";
+        $this->report_output .= $this->colorizeOutput($this->test_count . ' tests processed. ' . $error_count, 'red', true) . "\n";
+
+        print $this->report_output;
 
         return 1;
     }
