@@ -259,6 +259,12 @@ class Verif
      */
     public function isEqualTo($string)
     {
+        // If we don't want to test content because it's not predictable
+        // We can use this workaround to skip the test
+        if ($string == 'Verif:skip') {
+            return $this;
+        }
+
         if ($string != $this->content) {
             $this->errors[] =
                 $this->colorizeOutput('Unexpected content: ', 'yellow')
