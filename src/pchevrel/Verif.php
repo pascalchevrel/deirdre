@@ -316,15 +316,15 @@ class Verif
      */
     public function report()
     {
-        $title = 'Report for: ' . $this->report_title . "\n";
-        $delimiter = str_repeat("-", strlen($title)) . "\n";
-        $this->report_output = $delimiter . $title . $delimiter;
+        $title = 'Report for: ' . $this->report_title;
+        $delimiter = "\n" . str_repeat("-", strlen($title)) . "\n";
+        $this->report_output = "\n" . $delimiter . $title . $delimiter;
 
         if (empty($this->errors)) {
             $this->report_output .= $this->colorizeOutput(
                 $this->test_count . ' tests processed. All tests processed without errors',
                 'green'
-                ) . "\n";
+                ) . "\n\n";
 
             print $this->report_output;
 
